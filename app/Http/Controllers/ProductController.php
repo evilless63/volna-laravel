@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Product;
 
 class ProductController extends Controller
 {
@@ -11,9 +13,16 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public $products; 
+    public function __construct() {
+        $this->products = Product::latest()->paginate(15);
+    } 
+
     public function index()
     {
-        //
+        $products = $this->products;
+        return View('admin.product.index', compact('products'));
     }
 
     /**
@@ -23,7 +32,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return View('admin.product.create');
     }
 
     /**
@@ -34,7 +43,20 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->all();
+
+        if($request->hasFile('main_image_path')) {
+            $path = $request->file('main_image_path')->store('uploads\product_images', 'public');
+            $data['main_image_path'] = $path;
+        }
+       
+        $data['is_active'] = $request->has('is_active');
+        $data['add_shema'] = $request->has('add_shema');
+        $product = Product::create($data);
+
+        $request->session()->flash('alert-success', 'Информация успешно добавлена !');
+        return redirect()->route('product.index');
+
     }
 
     /**
@@ -43,7 +65,7 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($slug)
     {
         //
     }
@@ -54,9 +76,10 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($slug)
     {
-        //
+        $product = Product::findBySlugOrFail($slug);
+        return View('admin.product.edit', compact('product'));
     }
 
     /**
@@ -66,9 +89,25 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $slug)
     {
-        //
+
+        $product = Product::findBySlugOrFail($slug);
+
+        $data = $request->all();
+
+        if($request->hasFile('main_image_path')) {
+            $path = $request->file('main_image_path')->store('uploads\product_images', 'public');
+            $data['main_image_path'] = $path;
+        }
+
+        $data['is_active'] = $request->has('is_active');
+        $data['add_shema'] = $request->has('add_shema');
+        
+        $product->update($data);
+
+        $request->session()->flash('alert-success', 'Информация успешно изменена !');
+        return redirect()->route('product.index');
     }
 
     /**
@@ -77,8 +116,15 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $slug)
     {
-        //
+        $product = Product::findBySlugOrFail($slug);
+
+        // dd(Storage::files($product->main_image_path));
+        Storage::delete('/public/' . $product->main_image_path);
+        $product->delete();
+
+        $request->session()->flash('alert-success', 'Информация успешно изменена !');
+        return redirect()->route('product.index');
     }
 }

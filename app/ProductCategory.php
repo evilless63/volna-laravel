@@ -4,18 +4,19 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
+use Cviebrock\EloquentSluggable\SluggableScopeHelpers;
 
 class ProductCategory extends Model
 {
+    use Sluggable;
+    use SluggableScopeHelpers;
 
-    public $filled = ['title','short_description','description','image_path','productcategory_id','meta_description','meta_keys'];
+    public $fillable = ['title','short_description','description','image_path','productcategory_id','meta_description','meta_keys'];
 
 
     public function products(){
         return $this->hasMany('App\Product');
     }
-
-    use Sluggable;
 
     /**
      * Return the sluggable configuration array for this model.

@@ -21,10 +21,10 @@ class CreateProductsTable extends Migration
             $table->string('title');
             $table->string('main_image_path');
             $table->mediumtext('description');
-            $table->integer('productcategory_id');
+            $table->integer('productcategory_id')->default(0);
 
-            $table->boolean('is_active');
-            $table->boolean('add_shema');
+            $table->integer('is_active');
+            $table->integer('add_shema');
 
             $table->string('meta_description');
             $table->string('meta_keys');
